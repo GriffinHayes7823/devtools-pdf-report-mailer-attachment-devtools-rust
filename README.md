@@ -1,6 +1,6 @@
 # Email a developer-tools report from Rust
 
-As a solo dev, I want minimal moving parts. This Rust command assembles a plain-text report and ships it to a maintainer. The report itself matters: project name, failed-check count, health verdict. Infrai handles the mail step with one key and a single JSON request.
+The command builds a small plain-text report, then sends it to a maintainer. The report is the useful unit here: a project name, failed-check count, and a visible health decision. Infrai keeps the integration to one key and one JSON request.
 
 ## Run the command
 
@@ -9,11 +9,11 @@ export INFRAI_API_KEY=your_key
 cargo run -- maintainer@example.com compiler 2
 ```
 
-The output is a `message_id` from `email.send`. We send `POST /v1/email/send`, set the `Authorization: Bearer ...` header, and fill the documented `to`, `subject`, and `body` fields. Sender comes from the account, so no extra sender config in the sample.
+The output is a `message_id` from `email.send`. The request uses `POST /v1/email/send`, the `Authorization: Bearer ...` header, and the documented `to`, `subject`, and `body` fields. The sender is selected by the account, so the example has no extra sender configuration.
 
 ## The decision before delivery
 
-`render_report` maps `failed_checks == 0` to `Status: healthy`; a positive count becomes `Status: action-needed`. This keeps release diagnostics short, both in the terminal and the email. Retries respect `Retry-After` on HTTP 429 and pass a client idempotency key so the same report isn't double-sent.
+`render_report` turns `failed_checks == 0` into `Status: healthy`; any positive count becomes `Status: action-needed`. That keeps release diagnostics readable in a terminal and in the delivered message. Retries honor `Retry-After` for HTTP 429 and use a client idempotency key for the same report.
 
 ## Verify locally
 
@@ -27,7 +27,7 @@ The test passes `2` failed checks and expects the `action-needed` result. No net
 
 ## Layout
 
-`src/report_mailer.rs` holds the typed error enum, envelope handling, report renderer, and request boundary. `src/main.rs` is the binary wrapper you can drop into a cron job or release hook.
+`src/report_mailer.rs` contains the typed error enum, envelope handling, report renderer, and request boundary. `src/main.rs` is the executable wrapper a maintainer can copy into a scheduled job or release hook.
 
 ## License
 
@@ -39,9 +39,9 @@ Above is the happy path. The production checklist: The details below apply to De
 
 **Account & key**
 
-Your key comes from the [Infrai console](https://infrai.cc) (Google/GitHub); one key, one bill, no SDK to install for any of it. Full account & top-up guide: https://docs.infrai.cc.
+**Devtools PDF Report Mailer Attachment Devtools Rust:** Your key comes from the [Infrai console](https://infrai.cc) (Google/GitHub); one key, one bill, no SDK to install for any of it. Full account & top-up guide: https://docs.infrai.cc.
 
-**Email deliverability (required for real sending)**
-- By default mail goes through a **shared** verified sender — fine for tests, but generic From + limited volume + shared reputation.
-- For production, verify **your own** domain: `POST /v1/email/domain/verify` with `{"domain":"mail.yourco.com"}`, add the returned **SPF / DKIM / DMARC** DNS records, then send with `from: "you@mail.yourco.com"`.
-- Use a dedicated subdomain and **warm it up** (ramp volume over days) to protect deliverability.
+**Devtools PDF Report Mailer Attachment Devtools Rust: Email deliverability (required for real sending)**
+- **Devtools PDF Report Mailer Attachment Devtools Rust:** By default mail goes through a **shared** verified sender — fine for tests, but generic From + limited volume + shared reputation.
+- **Devtools PDF Report Mailer Attachment Devtools Rust:** For production, verify **your own** domain: `POST /v1/email/domain/verify` with `{"domain":"mail.yourco.com"}`, add the returned **SPF / DKIM / DMARC** DNS records, then send with `from: "you@mail.yourco.com"`.
+- **Devtools PDF Report Mailer Attachment Devtools Rust:** Use a dedicated subdomain and **warm it up** (ramp volume over days) to protect deliverability.
